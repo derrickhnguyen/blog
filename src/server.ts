@@ -1,130 +1,138 @@
-import { GraphQLServer } from "graphql-yoga";
-import dotenv from "dotenv";
-import jwt from "jsonwebtoken";
-import cors from "cors";
-import { NextFunction, Request, Response } from "express";
-import { PrismaClient, User } from "@prisma/client";
-import { ContextParameters } from "graphql-yoga/dist/types";
-import cookieParser from "cookie-parser";
-import bodyParser from "body-parser";
-import passport from "passport";
-import { schema } from "./schema";
-import { ContextType } from "./contextTypes";
-import initPassport from "./initPassport";
+import { GraphQLServer } from 'graphql-yoga'
+import dotenv from 'dotenv'
+import jwt from 'jsonwebtoken'
+import cors from 'cors'
+import { NextFunction, Request, Response } from 'express'
+import { PrismaClient, User } from '@prisma/client'
+import { ContextParameters } from 'graphql-yoga/dist/types'
+import cookieParser from 'cookie-parser'
+import bodyParser from 'body-parser'
+import passport from 'passport'
+import { schema } from './schema'
+import { ContextType } from './contextTypes'
+import initPassport from './initPassport'
 
-const prisma = new PrismaClient();
-const port = 3000;
-const configPath = "/blog.config.env";
-const { parsed } = dotenv.config({ path: configPath });
+const prisma = new PrismaClient()
+const port = 3000
+const configPath = '/blog.config.env'
+const { parsed } = dotenv.config({ path: configPath })
 
 if (!parsed) {
   throw new Error(
-    `Unable to parse environment variables from path ${configPath}`
-  );
+    `Unable to parse environment variables from path ${configPath}`,
+  )
 }
 
-const { FB_CLIENT_ID, FB_CLIENT_SECRET, JWT_SECRET } = parsed;
+const { FB_CLIENT_ID, FB_CLIENT_SECRET, JWT_SECRET } = parsed
 
 const server = new GraphQLServer({
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   schema: schema as any,
   context: (request: ContextParameters): ContextType => ({
     ...request,
     prisma,
   }),
-});
+})
 
 initPassport({
   fbClientId: FB_CLIENT_ID,
   fbClientSecret: FB_CLIENT_SECRET,
   prisma,
-});
+})
 
-server.use(cors());
-server.use(cookieParser());
-server.use(bodyParser.urlencoded({ extended: true }));
-server.use(passport.initialize());
+server.use(cors())
+server.use(cookieParser())
+server.use(bodyParser.urlencoded({ extended: true }))
+server.use(passport.initialize())
 
 server.use(
   (
     req: Request & { currentUserId?: number },
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
-    const { blogJwtToken } = req.cookies;
+    const { blogJwtToken } = req.cookies
 
     if (!blogJwtToken) {
-      return next();
+      return next()
     }
 
-    const jwtResponse = jwt.verify(blogJwtToken, JWT_SECRET);
+    const jwtResponse = jwt.verify(blogJwtToken, JWT_SECRET)
 
-    const containsUserId = (obj: any): obj is { currentUserId: number } =>
-      typeof obj === "object" && !!("currentUserId" in obj);
+    const containsUserId = (obj: unknown): obj is { currentUserId: number } =>
+      obj && typeof obj === 'object' && !!('currentUserId' in obj)
 
     if (!containsUserId(jwtResponse)) {
-      return next;
+      return next
     }
 
-    req.currentUserId = jwtResponse.currentUserId;
+    req.currentUserId = jwtResponse.currentUserId
 
-    return next();
-  }
-);
+    return next()
+  },
+)
 
 server.use(
   async (
     req: Request & { currentUser?: User | null; currentUserId?: number },
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     if (!req.currentUserId) {
-      return next();
+      return next()
     }
 
     const user = await prisma.user.findOne({
       where: { id: req.currentUserId },
-    });
+    })
 
-    req.currentUser = user;
+    req.currentUser = user
 
-    return next();
-  }
-);
+    return next()
+  },
+)
 
 server.get(
-  "/auth/facebook/token",
-  passport.authenticate("facebook-token"),
+  '/auth/facebook/token',
+  passport.authenticate('facebook-token'),
   (req: Request, res: Response) => {
-    const currentUser = req.user;
+    const currentUser = req.user
 
-    const isPrismaUser = (user: any): user is User => !!user && !!user.id;
+    const isPrismaUser = (user: unknown): user is User =>
+      user && typeof user === 'object' && !!('id' in user)
 
     if (!isPrismaUser(currentUser)) {
       return res
         .status(401)
-        .json({ success: false, message: "Unable to authorize user." });
+        .json({ success: false, message: 'Unable to authorize user.' })
     }
 
-    const token = jwt.sign({ currentUserId: currentUser.id }, JWT_SECRET);
+    const token = jwt.sign({ currentUserId: currentUser.id }, JWT_SECRET)
 
     return res
-      .cookie("blogJwtToken", token, {
+      .cookie('blogJwtToken', token, {
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year cookie
       })
       .status(200)
-      .json({ success: true, message: "User is authorized." });
-  }
-);
+      .json({ success: true, message: 'User is authorized.' })
+  },
+)
+
+server.get('/auth/signout', (req: Request, res: Response) => {
+  res
+    .clearCookie('blogJwtToken')
+    .json({ success: true, message: 'Successfully logged out.' })
+})
 
 server.start(
   {
-    endpoint: "/graphql",
-    playground: "/playground",
+    endpoint: '/graphql',
+    playground: '/playground',
     getEndpoint: true,
     port,
   },
   () => {
-    console.log(`🚀 Server ready at: http://localhost:${port}\n⭐️`);
-  }
-);
+    console.log(`🚀 Server ready at: http://localhost:${port}\n⭐️`)
+  },
+)
