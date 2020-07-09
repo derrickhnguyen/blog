@@ -63,7 +63,7 @@ server.use(
       obj && typeof obj === 'object' && !!('currentUserId' in obj)
 
     if (!containsUserId(jwtResponse)) {
-      return next
+      return next()
     }
 
     req.currentUserId = jwtResponse.currentUserId
