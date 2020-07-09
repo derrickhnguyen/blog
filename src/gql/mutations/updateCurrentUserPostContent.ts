@@ -60,7 +60,7 @@ interface UpdateCurrentUserPostContentPayloadType {
 }
 
 const UpdateCurrentUserPostContentPayload = objectType({
-  name: 'UpdatecurrentUserPostContentPayload',
+  name: 'UpdateCurrentUserPostContentPayload',
   definition: t => {
     t.field('post', { type: Post, nullable: true })
 
