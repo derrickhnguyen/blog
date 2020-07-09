@@ -1,5 +1,8 @@
 import { arg, inputObjectType, interfaceType, objectType } from '@nexus/schema'
-import { Email } from '../../scalars'
+import { ApolloError } from 'apollo-server'
+import { InputJsonObject } from '@prisma/client'
+import { Email, JSON } from '../../scalars'
+import { ErrorCodeEnumType } from '../../enums'
 import { Post, PostType } from '../post'
 import { ContextType } from '../../../contextTypes'
 import { NodeType } from './node'
@@ -40,6 +43,21 @@ const UserPosts = objectType({
 
     t.int('totalResults', {
       resolve: ({ totalResults }: UserPostsType) => totalResults || 0,
+    })
+  },
+})
+
+interface UserProfileType {
+  bio: InputJsonObject
+}
+
+const UserProfile = objectType({
+  name: 'UserProfile',
+  definition: t => {
+    t.field('bio', {
+      type: JSON,
+      nullable: false,
+      resolve: ({ bio = {} }: UserProfileType) => bio,
     })
   },
 })
@@ -90,6 +108,34 @@ export const User = interfaceType({
         })) as unknown) as PostType[]
 
         return { results, totalResults }
+      },
+    })
+
+    t.field('profile', {
+      type: UserProfile,
+      resolve: async (
+        { id }: { id: string },
+        args: Record<string, unknown>,
+        context: ContextType,
+      ): Promise<UserPostsType> => {
+        const { prisma } = context
+
+        const userProfile = await prisma.profile.findOne({
+          where: { userId: Number(id) },
+          select: { bio: true },
+        })
+
+        const isUserProfile = (profile: unknown): profile is UserPostsType =>
+          profile && typeof profile === 'object'
+
+        if (!isUserProfile(userProfile)) {
+          throw new ApolloError(
+            'Unable to get user profile',
+            ErrorCodeEnumType.InternalServer,
+          )
+        }
+
+        return userProfile
       },
     })
 
