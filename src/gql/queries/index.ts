@@ -1,2 +1,2 @@
-export * from "./getCurrentUser";
-export * from "./getCurrentUserPost";
+export * from './getCurrentUser'
+export * from './getCurrentUserPost'

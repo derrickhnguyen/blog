@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint . --ext .ts",
     "start": "npx ts-node src/server"
   },
   "repository": {
@@ -25,6 +26,10 @@
     "@types/passport": "^1.0.4",
     "@types/passport-facebook-token": "^0.4.34",
     "@types/validator": "^13.1.0",
+    "@typescript-eslint/eslint-plugin": "^3.6.0",
+    "@typescript-eslint/parser": "^3.6.0",
+    "eslint": "^7.4.0",
+    "prettier": "^2.0.5",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.6"
   },

@@ -1,1 +1,1 @@
-export * from "./errorCodeEnum";
+export * from './errorCodeEnum'

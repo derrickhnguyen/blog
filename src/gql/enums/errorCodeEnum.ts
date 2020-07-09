@@ -1,22 +1,22 @@
-import { enumType } from "@nexus/schema";
+import { enumType } from '@nexus/schema'
 
 export enum ErrorCodeEnumType {
-  BadRequest = "BadRequest",
-  Conflict = "Conflict",
-  InternalServer = "InternalServer",
-  Unauthorized = "Unauthorized",
-  Forbidden = "Forbidden",
-  NotFound = "NotFound",
+  BadRequest = 'BadRequest',
+  Conflict = 'Conflict',
+  InternalServer = 'InternalServer',
+  Unauthorized = 'Unauthorized',
+  Forbidden = 'Forbidden',
+  NotFound = 'NotFound',
 }
 
 export const ErrorCodeEnum = enumType({
-  name: "ErrorCodeEnum",
+  name: 'ErrorCodeEnum',
   members: [
-    "BadRequest",
-    "Conflict",
-    "InternalServer",
-    "Unauthorized",
-    "Forbidden",
-    "NotFound",
+    'BadRequest',
+    'Conflict',
+    'InternalServer',
+    'Unauthorized',
+    'Forbidden',
+    'NotFound',
   ],
-});
+})

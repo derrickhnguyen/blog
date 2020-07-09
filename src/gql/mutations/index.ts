@@ -1,2 +1,2 @@
-export * from "./createCurrentUserPost";
-export * from "./updateCurrentUserPostContent";
+export * from './createCurrentUserPost'
+export * from './updateCurrentUserPostContent'

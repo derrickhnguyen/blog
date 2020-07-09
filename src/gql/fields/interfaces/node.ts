@@ -1,16 +1,16 @@
-import { interfaceType } from "@nexus/schema";
+import { interfaceType } from '@nexus/schema'
 
 export interface NodeType {
-  id: string;
+  id: string
 }
 
 export const Node = interfaceType({
-  name: "Node",
-  definition: (t) => {
-    t.id("id", {
+  name: 'Node',
+  definition: t => {
+    t.id('id', {
       resolve: ({ id }: NodeType) => id,
-    });
+    })
 
-    t.resolveType(() => null);
+    t.resolveType(() => null)
   },
-});
+})
