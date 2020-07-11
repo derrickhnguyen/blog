@@ -1,7 +1,7 @@
 import { GraphQLServer } from 'graphql-yoga'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
-import cors from 'cors'
+import cors, { CorsOptions } from 'cors'
 import { NextFunction, Request, Response } from 'express'
 import { PrismaClient, User } from '@prisma/client'
 import { ContextParameters } from 'graphql-yoga/dist/types'
@@ -23,6 +23,11 @@ if (!parsed) {
   )
 }
 
+const corsOptions: CorsOptions = {
+  origin: 'http://localhost:8000',
+  credentials: true,
+}
+
 const { FB_CLIENT_ID, FB_CLIENT_SECRET, JWT_SECRET } = parsed
 
 const server = new GraphQLServer({
@@ -40,7 +45,7 @@ initPassport({
   prisma,
 })
 
-server.use(cors())
+server.use(cors(corsOptions))
 server.use(cookieParser())
 server.use(bodyParser.urlencoded({ extended: true }))
 server.use(passport.initialize())
@@ -78,7 +83,7 @@ server.use(
     res: Response,
     next: NextFunction,
   ) => {
-    if (!req.currentUserId) {
+    if (typeof req.currentUserId !== 'number') {
       return next()
     }
 
@@ -127,6 +132,7 @@ server.get('/auth/signout', (req: Request, res: Response) => {
 
 server.start(
   {
+    cors: corsOptions,
     endpoint: '/graphql',
     playground: '/playground',
     getEndpoint: true,

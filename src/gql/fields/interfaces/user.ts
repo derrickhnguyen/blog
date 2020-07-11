@@ -14,11 +14,6 @@ export interface UserType extends NodeType {
   posts: PostType[]
 }
 
-interface UserPostsInputType {
-  limit?: number
-  after?: string
-}
-
 const UserPostsInput = inputObjectType({
   name: 'UserPostsInput',
   definition: t => {
@@ -38,11 +33,21 @@ const UserPosts = objectType({
   definition: t => {
     t.list.field('results', {
       type: Post,
-      resolve: ({ results = [] }: UserPostsType) => results,
+      resolve: root => {
+        const containsPostResults = (root: any): root is UserPostsType =>
+          !!('results' in root)
+
+        return containsPostResults(root) ? root.results : []
+      },
     })
 
     t.int('totalResults', {
-      resolve: ({ totalResults }: UserPostsType) => totalResults || 0,
+      resolve: root => {
+        const containsTotalResults = (root: any): root is UserPostsType =>
+          !!('totalResults' in root)
+
+        return containsTotalResults(root) ? root.totalResults : 0
+      },
     })
   },
 })
@@ -57,7 +62,12 @@ const UserProfile = objectType({
     t.field('bio', {
       type: JSON,
       nullable: false,
-      resolve: ({ bio = {} }: UserProfileType) => bio,
+      resolve: root => {
+        const containsBio = (root: any): root is UserProfileType =>
+          !!('bio' in root) && typeof root.bio === 'object'
+
+        return containsBio(root) ? root.bio : {}
+      },
     })
   },
 })
@@ -66,16 +76,31 @@ export const User = interfaceType({
   name: 'User',
   definition: t => {
     t.string('firstName', {
-      resolve: ({ firstName = '' }: UserType) => firstName,
+      resolve: root => {
+        const containsFirstName = (root: any): root is UserType =>
+          !!('firstName' in root)
+
+        return containsFirstName(root) ? root.firstName : ''
+      },
     })
 
     t.string('lastName', {
-      resolve: ({ lastName = '' }: UserType) => lastName,
+      resolve: root => {
+        const containsLastName = (root: any): root is UserType =>
+          !!('lastName' in root)
+
+        return containsLastName(root) ? root.lastName : ''
+      },
     })
 
     t.field('email', {
       type: Email,
-      resolve: ({ email = '' }: UserType) => email,
+      resolve: root => {
+        const containsEmail = (root: any): root is UserType =>
+          !!('email' in root)
+
+        return containsEmail(root) ? root.email : ''
+      },
     })
 
     t.field('posts', {
@@ -88,12 +113,21 @@ export const User = interfaceType({
         }),
       },
       resolve: async (
-        { id }: UserType,
-        { input }: { input: UserPostsInputType },
+        root,
+        { input },
         context: ContextType,
       ): Promise<UserPostsType> => {
+        const containsId = (root: any): root is { id: string } =>
+          !!('id' in root)
+
+        if (!containsId(root)) {
+          throw new ApolloError(
+            'Unable to fetch user posts. User ID was not given.',
+          )
+        }
+        const { id } = root
         const { prisma } = context
-        const { after, limit = 10 } = input
+        const { after, limit = 10 } = input || {}
         const cursor = after ? { id: Number(after) } : undefined
 
         const totalResults = await prisma.post.count({
@@ -103,7 +137,7 @@ export const User = interfaceType({
         const results = ((await prisma.post.findMany({
           cursor,
           skip: cursor ? 1 : 0,
-          take: limit,
+          take: limit === null ? undefined : limit,
           where: { authorId: Number(id) },
         })) as unknown) as PostType[]
 
@@ -114,12 +148,21 @@ export const User = interfaceType({
     t.field('profile', {
       type: UserProfile,
       resolve: async (
-        { id }: { id: string },
+        root,
         args: Record<string, unknown>,
         context: ContextType,
       ): Promise<UserPostsType> => {
-        const { prisma } = context
+        const containsId = (root: any): root is { id: string } =>
+          !!('id' in root)
 
+        if (!containsId(root)) {
+          throw new ApolloError(
+            'Unable to fetch user profile. User ID was not given.',
+          )
+        }
+
+        const { id } = root
+        const { prisma } = context
         const userProfile = await prisma.profile.findOne({
           where: { userId: Number(id) },
           select: { bio: true },

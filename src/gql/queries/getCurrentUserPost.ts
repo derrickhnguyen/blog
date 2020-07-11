@@ -64,7 +64,13 @@ const GetCurrentUserPostPayload = objectType({
 
     t.boolean('successful', {
       nullable: false,
-      resolve: ({ successful }: GetCurrentUserPostPayloadType) => !!successful,
+      resolve: root => {
+        const containsSuccessful = (
+          root: any,
+        ): root is GetCurrentUserPostPayloadType => !!('successful' in root)
+
+        return containsSuccessful(root) ? root.successful : false
+      },
     })
 
     t.list.field('userErrors', { type: UserError, nullable: true })
