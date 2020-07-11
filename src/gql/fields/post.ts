@@ -1,4 +1,5 @@
 import { objectType } from '@nexus/schema'
+import { ApolloError } from 'apollo-server'
 import { InputJsonValue } from '@prisma/client'
 import { UserInputError } from 'apollo-server'
 import { ContextType } from '../../contextTypes'
@@ -22,29 +23,42 @@ export const Post = objectType({
 
     t.field('content', {
       nullable: true,
-      resolve: ({ content = {} }: PostType): PostType['content'] => content,
       type: JSON,
     })
 
     t.field('createdAt', {
       type: Date,
       nullable: false,
-      resolve: ({ createdAt }: PostType): PostType['createdAt'] => createdAt,
+      resolve: root => {
+        const containsCreatedAt = (root: any): root is PostType =>
+          !!('createdAt' in root)
+
+        return containsCreatedAt(root) ? root.createdAt : ''
+      },
     })
 
     t.boolean('published', {
       nullable: false,
-      resolve: ({ published }: PostType): PostType['published'] => published,
+      resolve: root => {
+        const containsPublished = (root: any): root is PostType =>
+          !!('published' in root)
+
+        return containsPublished(root) ? root.published : false
+      },
     })
 
     t.string('title', {
       nullable: false,
-      resolve: ({ title }: PostType): PostType['title'] => title,
+      resolve: root => {
+        const containsTitle = (root: any): root is PostType =>
+          !!('title' in root)
+
+        return containsTitle(root) ? root.title : ''
+      },
     })
 
     t.field('updatedAt', {
       nullable: true,
-      resolve: ({ updatedAt }: PostType): PostType['updatedAt'] => updatedAt,
       type: Date,
     })
 
@@ -52,15 +66,25 @@ export const Post = objectType({
       type: RegularUser,
       nullable: false,
       resolve: async (
-        { id = '' },
+        root,
         args: Record<string, unknown>,
         context: ContextType,
       ): Promise<PostType['author']> => {
+        const containsId = (root: any): root is { id: string } =>
+          !!('id' in root)
+
+        if (!containsId(root)) {
+          throw new ApolloError(
+            'Unable to fetch post author. Post ID was not given.',
+          )
+        }
+
+        const { id } = root
         const { prisma } = context
 
         const post = await prisma.post.findOne({
           where: {
-            id,
+            id: Number(id),
           },
           include: {
             author: true,

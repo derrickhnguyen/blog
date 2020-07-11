@@ -1,5 +1,6 @@
 import { ApolloError } from 'apollo-server'
 import { arg, inputObjectType, objectType, mutationField } from '@nexus/schema'
+import { InputJsonValue } from '@prisma/client'
 import { ErrorCodeEnumType } from '../enums'
 import {
   UserError,
@@ -70,8 +71,14 @@ const UpdateCurrentUserInformationPayload = objectType({
 
     t.boolean('successful', {
       nullable: false,
-      resolve: ({ successful }: UpdateCurrentUserInformationPayloadType) =>
-        !!successful,
+      resolve: root => {
+        const containsSuccessful = (
+          root: any,
+        ): root is UpdateCurrentUserInformationPayloadType =>
+          !!('successful' in root)
+
+        return containsSuccessful(root) ? root.successful : false
+      },
     })
 
     t.list.field('userErrors', { type: UserError, nullable: true })
@@ -79,9 +86,9 @@ const UpdateCurrentUserInformationPayload = objectType({
 })
 
 interface CurrentUserInformationType {
-  firstName?: string
-  lastName?: string
-  bio?: string
+  firstName?: string | null
+  lastName?: string | null
+  bio?: InputJsonValue
 }
 
 const UpdatableCurrentUserInformationInput = inputObjectType({
