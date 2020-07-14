@@ -13,7 +13,7 @@ import { ContextType } from './contextTypes'
 import initPassport from './initPassport'
 
 const prisma = new PrismaClient()
-const port = 3000
+const port = 8000
 const configPath = '/blog.config.env'
 const { parsed } = dotenv.config({ path: configPath })
 
@@ -24,7 +24,7 @@ if (!parsed) {
 }
 
 const corsOptions: CorsOptions = {
-  origin: 'http://localhost:8000',
+  origin: 'http://localhost:3000',
   credentials: true,
 }
 

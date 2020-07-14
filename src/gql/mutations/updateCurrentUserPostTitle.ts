@@ -3,14 +3,13 @@ import { arg, inputObjectType, objectType, mutationField } from '@nexus/schema'
 import { Post, PostType, UserErrorType, UserError } from '../fields'
 import { ContextType } from '../../contextTypes'
 import { ErrorCodeEnumType } from '../enums'
-import { JSON } from '../scalars'
 
-const updateCurrentUserPostContent = async (
+const updateCurrentUserPostTitle = async (
   parent: Record<string, unknown>,
-  { input }: { input: UpdateCurrentUserPostContentInputType },
+  { input }: { input: UpdateCurrentUserPostTitleInputType },
   context: ContextType,
-): Promise<UpdateCurrentUserPostContentPayloadType> => {
-  const { postId, postContent } = input
+): Promise<UpdateCurrentUserPostTitlePayloadType> => {
+  const { postId, postTitle } = input
   const { prisma, request } = context
   const { currentUser } = request
 
@@ -35,7 +34,7 @@ const updateCurrentUserPostContent = async (
   }
 
   const updatedPost = await prisma.post.update({
-    data: { content: postContent, updatedAt: new Date().toISOString() },
+    data: { title: postTitle },
     where: { id: Number(postId) },
   })
 
@@ -52,14 +51,14 @@ const updateCurrentUserPostContent = async (
   return { post: updatedPost, successful: true }
 }
 
-interface UpdateCurrentUserPostContentPayloadType {
+interface UpdateCurrentUserPostTitlePayloadType {
   post?: PostType
   successful: boolean
   userErrors?: UserErrorType[]
 }
 
-const UpdateCurrentUserPostContentPayload = objectType({
-  name: 'UpdateCurrentUserPostContentPayload',
+const UpdateCurrentUserPostTitlePayload = objectType({
+  name: 'UpdateCurrentUserPostTitlePayload',
   definition: t => {
     t.field('post', { type: Post, nullable: true })
 
@@ -68,7 +67,7 @@ const UpdateCurrentUserPostContentPayload = objectType({
       resolve: root => {
         const containsSuccessful = (
           root: any,
-        ): root is UpdateCurrentUserPostContentPayloadType =>
+        ): root is UpdateCurrentUserPostTitlePayloadType =>
           !!('successful' in root)
 
         return containsSuccessful(root) ? root.successful : false
@@ -79,27 +78,26 @@ const UpdateCurrentUserPostContentPayload = objectType({
   },
 })
 
-interface UpdateCurrentUserPostContentInputType {
+interface UpdateCurrentUserPostTitleInputType {
   postId: string
-  postContent: string
+  postTitle: string
 }
 
-const UpdateCurrentUserPostContentInput = inputObjectType({
-  name: 'UpdateCurrentUserPostContentInput',
+const UpdateCurrentUserPostTitleInput = inputObjectType({
+  name: 'UpdateCurrentUserPostTitleInput',
   definition: t => {
     t.id('postId', { nullable: false })
-
-    t.field('postContent', { type: JSON, nullable: false })
+    t.string('postTitle', { nullable: false })
   },
 })
 
-export const updateCurrentUserPostContentMutationField = mutationField(
-  'updateCurrentUserPostContent',
+export const updateCurrentUserPostTitleMutationField = mutationField(
+  'updateCurrentUserPostTitle',
   {
     args: {
-      input: arg({ type: UpdateCurrentUserPostContentInput, nullable: false }),
+      input: arg({ type: UpdateCurrentUserPostTitleInput, nullable: false }),
     },
-    resolve: updateCurrentUserPostContent,
-    type: UpdateCurrentUserPostContentPayload,
+    resolve: updateCurrentUserPostTitle,
+    type: UpdateCurrentUserPostTitlePayload,
   },
 )

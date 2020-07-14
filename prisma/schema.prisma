@@ -10,7 +10,7 @@ datasource db {
 model Post {
   author    User      @relation(fields: [authorId], references: [id])
   authorId  Int
-  content   Json?
+  content   String?
   createdAt DateTime  @default(now())
   id        Int       @default(autoincrement()) @id
   published Boolean   @default(false)
@@ -21,10 +21,10 @@ model Post {
 }
 
 model Profile {
-  bio    Json?
-  id     Int   @default(autoincrement()) @id
-  userId Int   @unique
-  user   User  @relation(fields: [userId], references: [id])
+  bio    String?
+  id     Int     @default(autoincrement()) @id
+  userId Int     @unique
+  user   User    @relation(fields: [userId], references: [id])
 }
 
 model User {

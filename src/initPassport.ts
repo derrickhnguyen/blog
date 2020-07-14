@@ -54,7 +54,7 @@ const initPassport = ({
 
         await prisma.profile.create({
           data: {
-            bio: {},
+            bio: '',
             user: { connect: { id: newUser.id } },
           },
         })
