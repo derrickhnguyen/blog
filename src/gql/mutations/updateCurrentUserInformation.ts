@@ -1,6 +1,5 @@
 import { ApolloError } from 'apollo-server'
 import { arg, inputObjectType, objectType, mutationField } from '@nexus/schema'
-import { InputJsonValue } from '@prisma/client'
 import { ErrorCodeEnumType } from '../enums'
 import {
   UserError,
@@ -9,7 +8,6 @@ import {
   RegularUserType,
 } from '../fields'
 import { ContextType } from '../../contextTypes'
-import { JSON } from '../scalars'
 
 const updateCurrentUserInformation = async (
   parent: Record<string, unknown>,
@@ -30,20 +28,21 @@ const updateCurrentUserInformation = async (
     return { successful: false, userErrors: [userError] }
   }
 
-  if (bio && typeof bio === 'object') {
-    await prisma.profile.update({
-      where: { userId: currentUser.id },
-      data: { bio: bio },
-    })
-  }
-
-  const user = await prisma.user.update({
-    where: { id: currentUser.id },
-    data: {
-      firstName: firstName || currentUser.firstName,
-      lastName: lastName || currentUser.lastName,
-    },
-  })
+  const [user] = await Promise.all([
+    prisma.user.update({
+      where: { id: currentUser.id },
+      data: {
+        firstName: firstName || currentUser.firstName,
+        lastName: lastName || currentUser.lastName,
+      },
+    }),
+    bio
+      ? prisma.profile.update({
+          where: { userId: currentUser.id },
+          data: { bio },
+        })
+      : undefined,
+  ])
 
   const isUser = (user: unknown): user is RegularUserType =>
     user && typeof user === 'object' && !!('id' in user)
@@ -88,7 +87,7 @@ const UpdateCurrentUserInformationPayload = objectType({
 interface CurrentUserInformationType {
   firstName?: string | null
   lastName?: string | null
-  bio?: InputJsonValue
+  bio?: string | null
 }
 
 const UpdatableCurrentUserInformationInput = inputObjectType({
@@ -98,7 +97,7 @@ const UpdatableCurrentUserInformationInput = inputObjectType({
 
     t.string('lastName', { nullable: true })
 
-    t.field('bio', { type: JSON, nullable: true })
+    t.string('bio', { nullable: true })
   },
 })
 

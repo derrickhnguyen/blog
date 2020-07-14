@@ -1,7 +1,6 @@
 import { arg, inputObjectType, interfaceType, objectType } from '@nexus/schema'
 import { ApolloError } from 'apollo-server'
-import { InputJsonObject } from '@prisma/client'
-import { Email, JSON } from '../../scalars'
+import { Email } from '../../scalars'
 import { ErrorCodeEnumType } from '../../enums'
 import { Post, PostType } from '../post'
 import { ContextType } from '../../../contextTypes'
@@ -53,20 +52,19 @@ const UserPosts = objectType({
 })
 
 interface UserProfileType {
-  bio: InputJsonObject
+  bio: string
 }
 
 const UserProfile = objectType({
   name: 'UserProfile',
   definition: t => {
-    t.field('bio', {
-      type: JSON,
+    t.string('bio', {
       nullable: false,
       resolve: root => {
         const containsBio = (root: any): root is UserProfileType =>
-          !!('bio' in root) && typeof root.bio === 'object'
+          typeof root.bio === 'string'
 
-        return containsBio(root) ? root.bio : {}
+        return containsBio(root) ? root.bio : ''
       },
     })
   },

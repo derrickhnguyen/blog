@@ -55,6 +55,7 @@ type Mutation {
   createCurrentUserPost: CreateCurrentUserPostPayload!
   updateCurrentUserInformation(input: UpdateCurrentUserInformationInput!): UpdateCurrentUserInformationPayload!
   updateCurrentUserPostContent(input: UpdateCurrentUserPostContentInput!): UpdateCurrentUserPostContentPayload!
+  updateCurrentUserPostTitle(input: UpdateCurrentUserPostTitleInput!): UpdateCurrentUserPostTitlePayload!
 }
 
 interface Node {
@@ -86,7 +87,7 @@ type RegularUser implements Node & User {
 }
 
 input UpdatableCurrentUserInformationInput {
-  bio: JSON
+  bio: String
   firstName: String
   lastName: String
 }
@@ -107,6 +108,17 @@ input UpdateCurrentUserPostContentInput {
 }
 
 type UpdateCurrentUserPostContentPayload {
+  post: Post
+  successful: Boolean!
+  userErrors: [UserError!]
+}
+
+input UpdateCurrentUserPostTitleInput {
+  postId: ID!
+  postTitle: String!
+}
+
+type UpdateCurrentUserPostTitlePayload {
   post: Post
   successful: Boolean!
   userErrors: [UserError!]
@@ -136,5 +148,5 @@ input UserPostsInput {
 }
 
 type UserProfile {
-  bio: JSON!
+  bio: String!
 }

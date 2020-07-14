@@ -26,7 +26,7 @@ export interface NexusGenInputs {
     postId: string; // ID!
   }
   UpdatableCurrentUserInformationInput: { // input type
-    bio?: any | null; // JSON
+    bio?: string | null; // String
     firstName?: string | null; // String
     lastName?: string | null; // String
   }
@@ -36,6 +36,10 @@ export interface NexusGenInputs {
   UpdateCurrentUserPostContentInput: { // input type
     postContent: any; // JSON!
     postId: string; // ID!
+  }
+  UpdateCurrentUserPostTitleInput: { // input type
+    postId: string; // ID!
+    postTitle: string; // String!
   }
   UserPostsInput: { // input type
     after?: string | null; // String
@@ -77,6 +81,10 @@ export interface NexusGenRootTypes {
     post?: NexusGenRootTypes['Post'] | null; // Post
     userErrors?: NexusGenRootTypes['UserError'][] | null; // [UserError!]
   }
+  UpdateCurrentUserPostTitlePayload: { // root type
+    post?: NexusGenRootTypes['Post'] | null; // Post
+    userErrors?: NexusGenRootTypes['UserError'][] | null; // [UserError!]
+  }
   UserError: { // root type
     code: NexusGenEnums['ErrorCodeEnum']; // ErrorCodeEnum!
     message: string; // String!
@@ -100,6 +108,7 @@ export interface NexusGenAllTypes extends NexusGenRootTypes {
   UpdatableCurrentUserInformationInput: NexusGenInputs['UpdatableCurrentUserInformationInput'];
   UpdateCurrentUserInformationInput: NexusGenInputs['UpdateCurrentUserInformationInput'];
   UpdateCurrentUserPostContentInput: NexusGenInputs['UpdateCurrentUserPostContentInput'];
+  UpdateCurrentUserPostTitleInput: NexusGenInputs['UpdateCurrentUserPostTitleInput'];
   UserPostsInput: NexusGenInputs['UserPostsInput'];
   ErrorCodeEnum: NexusGenEnums['ErrorCodeEnum'];
 }
@@ -132,6 +141,7 @@ export interface NexusGenFieldTypes {
     createCurrentUserPost: NexusGenRootTypes['CreateCurrentUserPostPayload']; // CreateCurrentUserPostPayload!
     updateCurrentUserInformation: NexusGenRootTypes['UpdateCurrentUserInformationPayload']; // UpdateCurrentUserInformationPayload!
     updateCurrentUserPostContent: NexusGenRootTypes['UpdateCurrentUserPostContentPayload']; // UpdateCurrentUserPostContentPayload!
+    updateCurrentUserPostTitle: NexusGenRootTypes['UpdateCurrentUserPostTitlePayload']; // UpdateCurrentUserPostTitlePayload!
   }
   Post: { // field return type
     author: NexusGenRootTypes['RegularUser']; // RegularUser!
@@ -164,6 +174,11 @@ export interface NexusGenFieldTypes {
     successful: boolean; // Boolean!
     userErrors: NexusGenRootTypes['UserError'][] | null; // [UserError!]
   }
+  UpdateCurrentUserPostTitlePayload: { // field return type
+    post: NexusGenRootTypes['Post'] | null; // Post
+    successful: boolean; // Boolean!
+    userErrors: NexusGenRootTypes['UserError'][] | null; // [UserError!]
+  }
   UserError: { // field return type
     code: NexusGenEnums['ErrorCodeEnum']; // ErrorCodeEnum!
     message: string; // String!
@@ -173,7 +188,7 @@ export interface NexusGenFieldTypes {
     totalResults: number; // Int!
   }
   UserProfile: { // field return type
-    bio: any; // JSON!
+    bio: string; // String!
   }
   Node: { // field return type
     id: string; // ID!
@@ -200,6 +215,9 @@ export interface NexusGenArgTypes {
     updateCurrentUserPostContent: { // args
       input: NexusGenInputs['UpdateCurrentUserPostContentInput']; // UpdateCurrentUserPostContentInput!
     }
+    updateCurrentUserPostTitle: { // args
+      input: NexusGenInputs['UpdateCurrentUserPostTitleInput']; // UpdateCurrentUserPostTitleInput!
+    }
   }
   Query: {
     getCurrentUserPost: { // args
@@ -225,9 +243,9 @@ export interface NexusGenAbstractResolveReturnTypes {
 
 export interface NexusGenInheritedFields {}
 
-export type NexusGenObjectNames = "CreateCurrentUserPostPayload" | "CurrentUser" | "GetCurrentUserPayload" | "GetCurrentUserPostPayload" | "Mutation" | "Post" | "Query" | "RegularUser" | "UpdateCurrentUserInformationPayload" | "UpdateCurrentUserPostContentPayload" | "UserError" | "UserPosts" | "UserProfile";
+export type NexusGenObjectNames = "CreateCurrentUserPostPayload" | "CurrentUser" | "GetCurrentUserPayload" | "GetCurrentUserPostPayload" | "Mutation" | "Post" | "Query" | "RegularUser" | "UpdateCurrentUserInformationPayload" | "UpdateCurrentUserPostContentPayload" | "UpdateCurrentUserPostTitlePayload" | "UserError" | "UserPosts" | "UserProfile";
 
-export type NexusGenInputNames = "GetCurrentUserPostInput" | "UpdatableCurrentUserInformationInput" | "UpdateCurrentUserInformationInput" | "UpdateCurrentUserPostContentInput" | "UserPostsInput";
+export type NexusGenInputNames = "GetCurrentUserPostInput" | "UpdatableCurrentUserInformationInput" | "UpdateCurrentUserInformationInput" | "UpdateCurrentUserPostContentInput" | "UpdateCurrentUserPostTitleInput" | "UserPostsInput";
 
 export type NexusGenEnumNames = "ErrorCodeEnum";
 
