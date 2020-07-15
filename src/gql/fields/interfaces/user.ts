@@ -53,6 +53,7 @@ const UserPosts = objectType({
 
 interface UserProfileType {
   bio: string
+  profileImageUrl?: string
 }
 
 const UserProfile = objectType({
@@ -67,6 +68,8 @@ const UserProfile = objectType({
         return containsBio(root) ? root.bio : ''
       },
     })
+
+    t.string('profileImageUrl', { nullable: true })
   },
 })
 
@@ -149,7 +152,7 @@ export const User = interfaceType({
         root,
         args: Record<string, unknown>,
         context: ContextType,
-      ): Promise<UserPostsType> => {
+      ): Promise<UserProfileType> => {
         const containsId = (root: any): root is { id: string } =>
           !!('id' in root)
 
@@ -163,10 +166,10 @@ export const User = interfaceType({
         const { prisma } = context
         const userProfile = await prisma.profile.findOne({
           where: { userId: Number(id) },
-          select: { bio: true },
+          select: { bio: true, profileImageUrl: true },
         })
 
-        const isUserProfile = (profile: unknown): profile is UserPostsType =>
+        const isUserProfile = (profile: unknown): profile is UserProfileType =>
           profile && typeof profile === 'object'
 
         if (!isUserProfile(userProfile)) {

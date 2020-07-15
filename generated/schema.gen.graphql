@@ -63,7 +63,7 @@ interface Node {
 }
 
 type Post implements Node {
-  author: RegularUser!
+  author: User!
   content: JSON
   createdAt: Date!
   id: ID!
@@ -77,19 +77,11 @@ type Query {
   getCurrentUserPost(input: GetCurrentUserPostInput!): GetCurrentUserPostPayload!
 }
 
-type RegularUser implements Node & User {
-  email: Email!
-  firstName: String!
-  id: ID!
-  lastName: String!
-  posts(input: UserPostsInput = {limit: 10}): UserPosts!
-  profile: UserProfile!
-}
-
 input UpdatableCurrentUserInformationInput {
   bio: String
   firstName: String
   lastName: String
+  profileImageUrl: String
 }
 
 input UpdateCurrentUserInformationInput {
@@ -98,7 +90,7 @@ input UpdateCurrentUserInformationInput {
 
 type UpdateCurrentUserInformationPayload {
   successful: Boolean!
-  user: RegularUser
+  user: CurrentUser
   userErrors: [UserError!]
 }
 
@@ -149,4 +141,5 @@ input UserPostsInput {
 
 type UserProfile {
   bio: String!
+  profileImageUrl: String
 }
