@@ -21,10 +21,11 @@ model Post {
 }
 
 model Profile {
-  bio    String?
-  id     Int     @default(autoincrement()) @id
-  userId Int     @unique
-  user   User    @relation(fields: [userId], references: [id])
+  bio             String?
+  id              Int     @default(autoincrement()) @id
+  userId          Int     @unique
+  user            User    @relation(fields: [userId], references: [id])
+  profileImageUrl String?
 }
 
 model User {

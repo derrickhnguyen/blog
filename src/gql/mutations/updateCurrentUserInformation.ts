@@ -2,10 +2,10 @@ import { ApolloError } from 'apollo-server'
 import { arg, inputObjectType, objectType, mutationField } from '@nexus/schema'
 import { ErrorCodeEnumType } from '../enums'
 import {
+  CurrentUser,
+  CurrentUserType,
   UserError,
   UserErrorType,
-  RegularUser,
-  RegularUserType,
 } from '../fields'
 import { ContextType } from '../../contextTypes'
 
@@ -15,7 +15,13 @@ const updateCurrentUserInformation = async (
   context: ContextType,
 ): Promise<UpdateCurrentUserInformationPayloadType> => {
   const { updatableCurrentUserInformation } = input
-  const { firstName, lastName, bio } = updatableCurrentUserInformation
+  const {
+    firstName,
+    lastName,
+    bio,
+    profileImageUrl,
+  } = updatableCurrentUserInformation
+
   const { prisma, request } = context
   const { currentUser } = request
 
@@ -42,9 +48,15 @@ const updateCurrentUserInformation = async (
           data: { bio },
         })
       : undefined,
+    profileImageUrl
+      ? prisma.profile.update({
+          where: { userId: currentUser.id },
+          data: { profileImageUrl },
+        })
+      : undefined,
   ])
 
-  const isUser = (user: unknown): user is RegularUserType =>
+  const isUser = (user: unknown): user is CurrentUserType =>
     user && typeof user === 'object' && !!('id' in user)
 
   if (!isUser(user)) {
@@ -58,7 +70,7 @@ const updateCurrentUserInformation = async (
 }
 
 interface UpdateCurrentUserInformationPayloadType {
-  user?: RegularUserType
+  user?: CurrentUserType
   successful: boolean
   userErrors?: UserErrorType[]
 }
@@ -66,7 +78,7 @@ interface UpdateCurrentUserInformationPayloadType {
 const UpdateCurrentUserInformationPayload = objectType({
   name: 'UpdateCurrentUserInformationPayload',
   definition: t => {
-    t.field('user', { type: RegularUser, nullable: true })
+    t.field('user', { type: CurrentUser, nullable: true })
 
     t.boolean('successful', {
       nullable: false,
@@ -88,6 +100,7 @@ interface CurrentUserInformationType {
   firstName?: string | null
   lastName?: string | null
   bio?: string | null
+  profileImageUrl?: string | null
 }
 
 const UpdatableCurrentUserInformationInput = inputObjectType({
@@ -98,6 +111,8 @@ const UpdatableCurrentUserInformationInput = inputObjectType({
     t.string('lastName', { nullable: true })
 
     t.string('bio', { nullable: true })
+
+    t.string('profileImageUrl', { nullable: true })
   },
 })
 

@@ -3,8 +3,7 @@ import { ApolloError } from 'apollo-server'
 import { InputJsonValue } from '@prisma/client'
 import { UserInputError } from 'apollo-server'
 import { ContextType } from '../../contextTypes'
-import { Node, NodeType } from './interfaces'
-import { RegularUser, RegularUserType } from './regularUser'
+import { Node, NodeType, User, UserType } from './interfaces'
 import { Date, JSON } from '../scalars'
 
 export interface PostType extends NodeType {
@@ -13,7 +12,7 @@ export interface PostType extends NodeType {
   published: boolean
   title: string
   updatedAt?: string
-  author: RegularUserType
+  author: UserType
 }
 
 export const Post = objectType({
@@ -63,7 +62,7 @@ export const Post = objectType({
     })
 
     t.field('author', {
-      type: RegularUser,
+      type: User,
       nullable: false,
       resolve: async (
         root,
@@ -93,7 +92,7 @@ export const Post = objectType({
 
         const author = post?.author
 
-        const isPostAuthor = (author: unknown): author is RegularUserType =>
+        const isPostAuthor = (author: unknown): author is UserType =>
           author && typeof author === 'object' && !!('id' in author)
 
         if (!isPostAuthor(author)) {
