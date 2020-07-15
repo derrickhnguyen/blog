@@ -1,5 +1,6 @@
 import { arg, inputObjectType, interfaceType, objectType } from '@nexus/schema'
 import { ApolloError } from 'apollo-server'
+import { enumType } from '@nexus/schema'
 import { Email } from '../../scalars'
 import { ErrorCodeEnumType } from '../../enums'
 import { Post, PostType } from '../post'
@@ -13,14 +14,31 @@ export interface UserType extends NodeType {
   posts: PostType[]
 }
 
+enum UserPostsOrderByEnumType {
+  CreatedAtAscending = 'CreatedAtAscending',
+  CreatedAtDescending = 'CreatedAtDescending',
+}
+
+const UserPostsOrderByEnum = enumType({
+  name: 'UserPostsOrderByEnum',
+  members: ['CreatedAtAscending', 'CreatedAtDescending'],
+})
+
 const UserPostsInput = inputObjectType({
   name: 'UserPostsInput',
   definition: t => {
     t.int('limit', { default: 10 })
 
     t.string('after')
+
+    t.field('orderBy', { type: UserPostsOrderByEnum, nullable: true })
   },
 })
+
+const orderByMap = {
+  [UserPostsOrderByEnumType.CreatedAtAscending]: 'asc',
+  [UserPostsOrderByEnumType.CreatedAtDescending]: 'desc',
+} as const
 
 interface UserPostsType {
   results: PostType[]
@@ -128,7 +146,11 @@ export const User = interfaceType({
         }
         const { id } = root
         const { prisma } = context
-        const { after, limit = 10 } = input || {}
+        const {
+          after,
+          limit = 10,
+          orderBy = UserPostsOrderByEnumType.CreatedAtDescending,
+        } = input || {}
         const cursor = after ? { id: Number(after) } : undefined
 
         const totalResults = await prisma.post.count({
@@ -140,6 +162,7 @@ export const User = interfaceType({
           skip: cursor ? 1 : 0,
           take: limit === null ? undefined : limit,
           where: { authorId: Number(id) },
+          orderBy: { createdAt: orderBy ? orderByMap[orderBy] : null },
         })) as unknown) as PostType[]
 
         return { results, totalResults }

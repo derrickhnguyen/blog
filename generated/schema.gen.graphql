@@ -137,6 +137,12 @@ type UserPosts {
 input UserPostsInput {
   after: String
   limit: Int = 10
+  orderBy: UserPostsOrderByEnum
+}
+
+enum UserPostsOrderByEnum {
+  CreatedAtAscending
+  CreatedAtDescending
 }
 
 type UserProfile {
