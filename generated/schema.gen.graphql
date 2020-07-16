@@ -56,6 +56,7 @@ type Mutation {
   updateCurrentUserInformation(input: UpdateCurrentUserInformationInput!): UpdateCurrentUserInformationPayload!
   updateCurrentUserPostContent(input: UpdateCurrentUserPostContentInput!): UpdateCurrentUserPostContentPayload!
   updateCurrentUserPostTitle(input: UpdateCurrentUserPostTitleInput!): UpdateCurrentUserPostTitlePayload!
+  updateCurrentUserProfileImageUrl(input: UpdateCurrentUserProfileImageUrlInput!): UpdateCurrentUserProfileImageUrlPayload!
 }
 
 interface Node {
@@ -81,7 +82,6 @@ input UpdatableCurrentUserInformationInput {
   bio: String
   firstName: String
   lastName: String
-  profileImageUrl: String
 }
 
 input UpdateCurrentUserInformationInput {
@@ -113,6 +113,16 @@ input UpdateCurrentUserPostTitleInput {
 type UpdateCurrentUserPostTitlePayload {
   post: Post
   successful: Boolean!
+  userErrors: [UserError!]
+}
+
+input UpdateCurrentUserProfileImageUrlInput {
+  profileImageUrl: String!
+}
+
+type UpdateCurrentUserProfileImageUrlPayload {
+  successful: Boolean!
+  user: CurrentUser
   userErrors: [UserError!]
 }
 

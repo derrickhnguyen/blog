@@ -15,12 +15,7 @@ const updateCurrentUserInformation = async (
   context: ContextType,
 ): Promise<UpdateCurrentUserInformationPayloadType> => {
   const { updatableCurrentUserInformation } = input
-  const {
-    firstName,
-    lastName,
-    bio,
-    profileImageUrl,
-  } = updatableCurrentUserInformation
+  const { firstName, lastName, bio } = updatableCurrentUserInformation
 
   const { prisma, request } = context
   const { currentUser } = request
@@ -46,12 +41,6 @@ const updateCurrentUserInformation = async (
       ? prisma.profile.update({
           where: { userId: currentUser.id },
           data: { bio },
-        })
-      : undefined,
-    profileImageUrl
-      ? prisma.profile.update({
-          where: { userId: currentUser.id },
-          data: { profileImageUrl },
         })
       : undefined,
   ])
@@ -100,7 +89,6 @@ interface CurrentUserInformationType {
   firstName?: string | null
   lastName?: string | null
   bio?: string | null
-  profileImageUrl?: string | null
 }
 
 const UpdatableCurrentUserInformationInput = inputObjectType({
@@ -111,8 +99,6 @@ const UpdatableCurrentUserInformationInput = inputObjectType({
     t.string('lastName', { nullable: true })
 
     t.string('bio', { nullable: true })
-
-    t.string('profileImageUrl', { nullable: true })
   },
 })
 

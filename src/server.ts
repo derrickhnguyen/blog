@@ -1,4 +1,5 @@
 import { GraphQLServer } from 'graphql-yoga'
+import { v2 as Cloudinary } from 'cloudinary'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
 import cors, { CorsOptions } from 'cors'
@@ -28,7 +29,20 @@ const corsOptions: CorsOptions = {
   credentials: true,
 }
 
-const { FB_CLIENT_ID, FB_CLIENT_SECRET, JWT_SECRET } = parsed
+const {
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET,
+  FB_CLIENT_ID,
+  FB_CLIENT_SECRET,
+  JWT_SECRET,
+} = parsed
+
+Cloudinary.config({
+  cloud_name: CLOUDINARY_CLOUD_NAME,
+  api_key: CLOUDINARY_API_KEY,
+  api_secret: CLOUDINARY_API_SECRET,
+})
 
 const server = new GraphQLServer({
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -36,6 +50,7 @@ const server = new GraphQLServer({
   context: (request: ContextParameters): ContextType => ({
     ...request,
     prisma,
+    cloudinary: Cloudinary,
   }),
 })
 
