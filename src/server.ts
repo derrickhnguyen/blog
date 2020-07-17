@@ -154,6 +154,6 @@ server.start(
     port,
   },
   () => {
-    console.log(`🚀 Server ready at: http://localhost:${port}\n⭐️`)
+    console.log(`🚀 Server ready at: http://localhost:${port} ⭐️`)
   },
 )

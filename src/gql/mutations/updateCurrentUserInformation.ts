@@ -37,7 +37,7 @@ const updateCurrentUserInformation = async (
         lastName: lastName || currentUser.lastName,
       },
     }),
-    bio
+    typeof bio === 'string'
       ? prisma.profile.update({
           where: { userId: currentUser.id },
           data: { bio },

@@ -13,7 +13,7 @@ type CurrentUser implements Node & User {
   firstName: String!
   id: ID!
   lastName: String!
-  posts(input: UserPostsInput = {limit: 10}): UserPosts!
+  posts(input: UserPostsInput): UserPosts!
   profile: UserProfile!
 }
 
@@ -61,6 +61,11 @@ type Mutation {
 
 interface Node {
   id: ID!
+}
+
+type PaginationCursors {
+  endCursor: String
+  startCursor: String
 }
 
 type Post implements Node {
@@ -130,7 +135,7 @@ interface User {
   email: Email!
   firstName: String!
   lastName: String!
-  posts(input: UserPostsInput = {limit: 10}): UserPosts!
+  posts(input: UserPostsInput): UserPosts!
   profile: UserProfile!
 }
 
@@ -140,14 +145,17 @@ type UserError {
 }
 
 type UserPosts {
+  paginationCursors: PaginationCursors!
   results: [Post!]!
   totalResults: Int!
+  userErrors: [UserError!]
 }
 
 input UserPostsInput {
   after: String
+  before: String
   limit: Int = 10
-  orderBy: UserPostsOrderByEnum
+  orderBy: UserPostsOrderByEnum = CreatedAtDescending
 }
 
 enum UserPostsOrderByEnum {
