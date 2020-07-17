@@ -3,9 +3,11 @@ import { ApolloError } from 'apollo-server'
 import { enumType } from '@nexus/schema'
 import { Email } from '../../scalars'
 import { ErrorCodeEnumType } from '../../enums'
+import { PaginationCursors, PaginationCursorsType } from '../paginationCursors'
 import { Post, PostType } from '../post'
 import { ContextType } from '../../../contextTypes'
 import { NodeType } from './node'
+import { UserErrorType, UserError } from '../userError'
 
 export interface UserType extends NodeType {
   firstName: string
@@ -29,9 +31,15 @@ const UserPostsInput = inputObjectType({
   definition: t => {
     t.int('limit', { default: 10 })
 
-    t.string('after')
+    t.string('after', { nullable: true })
 
-    t.field('orderBy', { type: UserPostsOrderByEnum, nullable: true })
+    t.string('before', { nullable: true })
+
+    t.field('orderBy', {
+      type: UserPostsOrderByEnum,
+      nullable: true,
+      default: 'CreatedAtDescending',
+    })
   },
 })
 
@@ -43,6 +51,8 @@ const orderByMap = {
 interface UserPostsType {
   results: PostType[]
   totalResults: number
+  userErrors?: UserErrorType[]
+  paginationCursors: PaginationCursorsType
 }
 
 const UserPosts = objectType({
@@ -66,6 +76,18 @@ const UserPosts = objectType({
         return containsTotalResults(root) ? root.totalResults : 0
       },
     })
+
+    t.field('paginationCursors', {
+      type: PaginationCursors,
+      resolve: root => {
+        const containsPaginationCursors = (root: any): root is UserPostsType =>
+          !!('paginationCursors' in root)
+
+        return containsPaginationCursors(root) ? root.paginationCursors : {}
+      },
+    })
+
+    t.list.field('userErrors', { type: UserError, nullable: true })
   },
 })
 
@@ -128,7 +150,6 @@ export const User = interfaceType({
         input: arg({
           nullable: true,
           type: UserPostsInput,
-          default: { limit: 10 },
         }),
       },
       resolve: async (
@@ -144,28 +165,70 @@ export const User = interfaceType({
             'Unable to fetch user posts. User ID was not given.',
           )
         }
+
         const { id } = root
         const { prisma } = context
         const {
           after,
+          before,
           limit = 10,
           orderBy = UserPostsOrderByEnumType.CreatedAtDescending,
         } = input || {}
-        const cursor = after ? { id: Number(after) } : undefined
+
+        if (after && before) {
+          const userError: UserErrorType = {
+            code: ErrorCodeEnumType.BadRequest,
+            message:
+              'Both after and before arguments were provided. Only one can be provided at a time.',
+          }
+
+          return {
+            results: [],
+            totalResults: 0,
+            paginationCursors: {},
+            userErrors: [userError],
+          }
+        }
+
+        if (limit === null) {
+          throw new ApolloError('WTF TypeScript')
+        }
+
+        const cursor =
+          before || after ? { id: Number(before || after) } : undefined
 
         const totalResults = await prisma.post.count({
           where: { authorId: Number(id) },
         })
 
-        const results = ((await prisma.post.findMany({
-          cursor,
-          skip: cursor ? 1 : 0,
-          take: limit === null ? undefined : limit,
+        const take = before ? limit * -1 : limit
+
+        const firstPosts = ((await prisma.post.findMany({
+          take: 1,
           where: { authorId: Number(id) },
           orderBy: { createdAt: orderBy ? orderByMap[orderBy] : null },
         })) as unknown) as PostType[]
 
-        return { results, totalResults }
+        const results = ((await prisma.post.findMany({
+          cursor,
+          skip: cursor ? 1 : 0,
+          take,
+          where: { authorId: Number(id) },
+          orderBy: { createdAt: orderBy ? orderByMap[orderBy] : null },
+        })) as unknown) as PostType[]
+
+        const startCursor =
+          firstPosts[0]?.id === results[0]?.id
+            ? undefined
+            : String(results[0]?.id)
+        const endCursor =
+          results.length === limit
+            ? String(results[results.length - 1]?.id)
+            : undefined
+
+        const paginationCursors = { startCursor, endCursor }
+
+        return { results, totalResults, paginationCursors }
       },
     })
 

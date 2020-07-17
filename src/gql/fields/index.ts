@@ -1,5 +1,6 @@
 export * from './interfaces'
 export * from './currentUser'
+export * from './paginationCursors'
 export * from './post'
 export * from './regularUser'
 export * from './userError'
