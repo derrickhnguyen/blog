@@ -22,10 +22,13 @@ model Post {
 
 model Profile {
   bio             String?
+  facebookUrl     String?
   id              Int     @default(autoincrement()) @id
+  instagramUrl    String?
+  profileImageUrl String?
+  twitterUrl      String?
   userId          Int     @unique
   user            User    @relation(fields: [userId], references: [id])
-  profileImageUrl String?
 }
 
 model User {

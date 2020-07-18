@@ -1,8 +1,11 @@
 import { arg, inputObjectType, interfaceType, objectType } from '@nexus/schema'
 import { ApolloError } from 'apollo-server'
-import { enumType } from '@nexus/schema'
 import { Email } from '../../scalars'
-import { ErrorCodeEnumType } from '../../enums'
+import {
+  ErrorCodeEnumType,
+  UserPostsOrderByEnum,
+  UserPostsOrderByEnumType,
+} from '../../enums'
 import { PaginationCursors, PaginationCursorsType } from '../paginationCursors'
 import { Post, PostType } from '../post'
 import { ContextType } from '../../../contextTypes'
@@ -15,16 +18,6 @@ export interface UserType extends NodeType {
   email: string
   posts: PostType[]
 }
-
-enum UserPostsOrderByEnumType {
-  CreatedAtAscending = 'CreatedAtAscending',
-  CreatedAtDescending = 'CreatedAtDescending',
-}
-
-const UserPostsOrderByEnum = enumType({
-  name: 'UserPostsOrderByEnum',
-  members: ['CreatedAtAscending', 'CreatedAtDescending'],
-})
 
 const UserPostsInput = inputObjectType({
   name: 'UserPostsInput',
@@ -94,6 +87,9 @@ const UserPosts = objectType({
 interface UserProfileType {
   bio: string
   profileImageUrl?: string
+  facebookUrl?: string
+  instagramUrl?: string
+  twitterUrl?: string
 }
 
 const UserProfile = objectType({
@@ -110,6 +106,12 @@ const UserProfile = objectType({
     })
 
     t.string('profileImageUrl', { nullable: true })
+
+    t.string('facebookUrl', { nullable: true })
+
+    t.string('instagramUrl', { nullable: true })
+
+    t.string('twitterUrl', { nullable: true })
   },
 })
 
@@ -252,7 +254,6 @@ export const User = interfaceType({
         const { prisma } = context
         const userProfile = await prisma.profile.findOne({
           where: { userId: Number(id) },
-          select: { bio: true, profileImageUrl: true },
         })
 
         const isUserProfile = (profile: unknown): profile is UserProfileType =>
