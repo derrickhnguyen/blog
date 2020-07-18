@@ -57,6 +57,7 @@ type Mutation {
   updateCurrentUserPostContent(input: UpdateCurrentUserPostContentInput!): UpdateCurrentUserPostContentPayload!
   updateCurrentUserPostTitle(input: UpdateCurrentUserPostTitleInput!): UpdateCurrentUserPostTitlePayload!
   updateCurrentUserProfileImageUrl(input: UpdateCurrentUserProfileImageUrlInput!): UpdateCurrentUserProfileImageUrlPayload!
+  updateCurrentUserSocialMedias(input: UpdateCurrentUserSocialMediasInput!): UpdateCurrentUserSocialMediasPayload!
 }
 
 interface Node {
@@ -131,6 +132,18 @@ type UpdateCurrentUserProfileImageUrlPayload {
   userErrors: [UserError!]
 }
 
+input UpdateCurrentUserSocialMediasInput {
+  facebookUrl: String
+  instagramUrl: String
+  twitterUrl: String
+}
+
+type UpdateCurrentUserSocialMediasPayload {
+  successful: Boolean!
+  user: CurrentUser
+  userErrors: [UserError!]
+}
+
 interface User {
   email: Email!
   firstName: String!
@@ -165,5 +178,8 @@ enum UserPostsOrderByEnum {
 
 type UserProfile {
   bio: String!
+  facebookUrl: String
+  instagramUrl: String
   profileImageUrl: String
+  twitterUrl: String
 }
