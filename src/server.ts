@@ -1,3 +1,4 @@
+import { homedir } from 'os'
 import { GraphQLServer } from 'graphql-yoga'
 import { v2 as Cloudinary } from 'cloudinary'
 import dotenv from 'dotenv'
@@ -15,7 +16,7 @@ import initPassport from './initPassport'
 
 const prisma = new PrismaClient()
 const port = 8000
-const configPath = '/blog.config.env'
+const configPath = `${homedir()}/blog.config.env`
 const { parsed } = dotenv.config({ path: configPath })
 
 if (!parsed) {
@@ -94,11 +95,11 @@ server.use(
 
 server.use(
   async (
-    req: Request & { currentUser?: User | null; currentUserId?: number },
+    req: Request & { currentUser?: User | null; currentUserId?: string },
     res: Response,
     next: NextFunction,
   ) => {
-    if (typeof req.currentUserId !== 'number') {
+    if (typeof req.currentUserId !== 'string') {
       return next()
     }
 

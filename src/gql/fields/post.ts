@@ -82,9 +82,7 @@ export const Post = objectType({
         const { prisma } = context
 
         const post = await prisma.post.findOne({
-          where: {
-            id: Number(id),
-          },
+          where: { id },
           include: {
             author: true,
           },

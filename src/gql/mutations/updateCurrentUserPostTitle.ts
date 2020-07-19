@@ -22,7 +22,7 @@ const updateCurrentUserPostTitle = async (
     return { successful: false, userErrors: [userError] }
   }
 
-  const post = await prisma.post.findOne({ where: { id: Number(postId) } })
+  const post = await prisma.post.findOne({ where: { id: postId } })
 
   if (!post) {
     const userError: UserErrorType = {
@@ -35,7 +35,7 @@ const updateCurrentUserPostTitle = async (
 
   const updatedPost = await prisma.post.update({
     data: { title: postTitle },
-    where: { id: Number(postId) },
+    where: { id: postId },
   })
 
   const isPost = (post: unknown): post is PostType =>

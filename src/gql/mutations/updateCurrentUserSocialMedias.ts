@@ -28,7 +28,7 @@ const updateCurrentUserSocialMedia = async (
   }
 
   const profile = await prisma.profile.update({
-    where: { userId: Number(currentUser.id) },
+    where: { userId: currentUser.id },
     data: {
       instagramUrl: typeof instagramUrl === 'string' ? instagramUrl : undefined,
       twitterUrl: typeof twitterUrl === 'string' ? twitterUrl : undefined,

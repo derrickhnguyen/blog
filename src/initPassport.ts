@@ -64,9 +64,9 @@ const initPassport = ({
     ),
   )
 
-  passport.serializeUser<User, number>((user, done) => done(null, user.id))
+  passport.serializeUser<User, string>((user, done) => done(null, user.id))
 
-  passport.deserializeUser<User, number>(async (id, done) => {
+  passport.deserializeUser<User, string>(async (id, done) => {
     const matchingUser = await prisma.user.findOne({
       where: {
         id,
