@@ -25,7 +25,7 @@ const createCurrentUserPost = async (
     data: {
       published: false,
       title: '',
-      author: { connect: { id: Number(currentUser.id) } },
+      author: { connect: { id: currentUser.id } },
     },
   })
 

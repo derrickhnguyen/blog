@@ -28,7 +28,7 @@ const updateCurrentUserProfileImageUrl = async (
   }
 
   const profile = await prisma.profile.findOne({
-    where: { userId: Number(currentUser.id) },
+    where: { userId: currentUser.id },
   })
 
   if (profile?.profileImageUrl) {
@@ -46,7 +46,7 @@ const updateCurrentUserProfileImageUrl = async (
   }
 
   const updatedProfile = await prisma.profile.update({
-    where: { userId: Number(currentUser.id) },
+    where: { userId: currentUser.id },
     data: { profileImageUrl },
     include: { user: true },
   })

@@ -197,17 +197,19 @@ export const User = interfaceType({
         }
 
         const cursor =
-          before || after ? { id: Number(before || after) } : undefined
+          typeof before === 'string' || typeof after === 'string'
+            ? { id: before || after || '' }
+            : undefined
 
         const totalResults = await prisma.post.count({
-          where: { authorId: Number(id) },
+          where: { authorId: id },
         })
 
         const take = before ? limit * -1 : limit
 
         const firstPosts = ((await prisma.post.findMany({
           take: 1,
-          where: { authorId: Number(id) },
+          where: { authorId: id },
           orderBy: { createdAt: orderBy ? orderByMap[orderBy] : null },
         })) as unknown) as PostType[]
 
@@ -215,7 +217,7 @@ export const User = interfaceType({
           cursor,
           skip: cursor ? 1 : 0,
           take,
-          where: { authorId: Number(id) },
+          where: { authorId: id },
           orderBy: { createdAt: orderBy ? orderByMap[orderBy] : null },
         })) as unknown) as PostType[]
 
@@ -253,7 +255,7 @@ export const User = interfaceType({
         const { id } = root
         const { prisma } = context
         const userProfile = await prisma.profile.findOne({
-          where: { userId: Number(id) },
+          where: { userId: id },
         })
 
         const isUserProfile = (profile: unknown): profile is UserProfileType =>

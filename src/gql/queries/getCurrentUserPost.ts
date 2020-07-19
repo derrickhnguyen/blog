@@ -22,7 +22,7 @@ const getCurrentUserPost = async (
   }
 
   const post = await prisma.post.findOne({
-    where: { authorId: Number(currentUser.id) },
+    where: { authorId: currentUser.id },
   })
 
   const isPost = (post: unknown): post is PostType =>
