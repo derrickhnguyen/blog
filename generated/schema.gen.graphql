@@ -55,6 +55,7 @@ type Mutation {
   createCurrentUserPost: CreateCurrentUserPostPayload!
   updateCurrentUserInformation(input: UpdateCurrentUserInformationInput!): UpdateCurrentUserInformationPayload!
   updateCurrentUserPostContent(input: UpdateCurrentUserPostContentInput!): UpdateCurrentUserPostContentPayload!
+  updateCurrentUserPostHeaderImageUrl(input: UpdateCurrentUserPostHeaderImageUrlInput!): UpdateCurrentUserPostHeaderImagePayload!
   updateCurrentUserPostTitle(input: UpdateCurrentUserPostTitleInput!): UpdateCurrentUserPostTitlePayload!
   updateCurrentUserProfileImageUrl(input: UpdateCurrentUserProfileImageUrlInput!): UpdateCurrentUserProfileImageUrlPayload!
   updateCurrentUserSocialMedias(input: UpdateCurrentUserSocialMediasInput!): UpdateCurrentUserSocialMediasPayload!
@@ -70,18 +71,28 @@ type PaginationCursors {
 }
 
 type Post implements Node {
-  author: User!
+  author: RegularUser!
   content: JSON
   createdAt: Date!
+  headerImageUrl: String
   id: ID!
   published: Boolean!
-  title: String!
+  title: String
   updatedAt: Date
 }
 
 type Query {
   getCurrentUser: GetCurrentUserPayload!
   getCurrentUserPost(input: GetCurrentUserPostInput!): GetCurrentUserPostPayload!
+}
+
+type RegularUser implements Node & User {
+  email: Email!
+  firstName: String!
+  id: ID!
+  lastName: String!
+  posts(input: UserPostsInput): UserPosts!
+  profile: UserProfile!
 }
 
 input UpdatableCurrentUserInformationInput {
@@ -109,6 +120,17 @@ type UpdateCurrentUserPostContentPayload {
   post: Post
   successful: Boolean!
   userErrors: [UserError!]
+}
+
+type UpdateCurrentUserPostHeaderImagePayload {
+  post: Post
+  successful: Boolean!
+  userErrors: [UserError!]
+}
+
+input UpdateCurrentUserPostHeaderImageUrlInput {
+  headerImageUrl: String!
+  postId: ID!
 }
 
 input UpdateCurrentUserPostTitleInput {

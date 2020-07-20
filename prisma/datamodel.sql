@@ -7,12 +7,13 @@ CREATE TABLE User (
 );
 CREATE TABLE Post (
   authorId VARCHAR(128) NOT NULL,
-  content MEDIUMTEXT,
+  content TEXT,
   createdAt TIMESTAMP NOT NULL DEFAULT now(),
   id VARCHAR(128) PRIMARY KEY NOT NULL,
   published BOOLEAN NOT NULL DEFAULT false,
-  title VARCHAR(255) NOT NULL,
+  title TINYTEXT,
   updatedAt TIMESTAMP,
+  headerImageUrl TEXT,
 
   FOREIGN KEY (authorId) REFERENCES User(id)
 );

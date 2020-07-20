@@ -22,11 +22,7 @@ const createCurrentUserPost = async (
   }
 
   const newPost = await prisma.post.create({
-    data: {
-      published: false,
-      title: '',
-      author: { connect: { id: currentUser.id } },
-    },
+    data: { author: { connect: { id: currentUser.id } } },
   })
 
   const isNewPost = (post: unknown): post is PostType =>
