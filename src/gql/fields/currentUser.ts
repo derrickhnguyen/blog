@@ -1,5 +1,5 @@
 import { objectType } from '@nexus/schema'
-import { Node, NodeType, User, UserType } from './interfaces'
+import { NodeType, User, UserType, Node } from './interfaces'
 
 export interface CurrentUserType extends NodeType, UserType {}
 

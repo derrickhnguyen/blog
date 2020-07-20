@@ -8,14 +8,15 @@ datasource db {
 }
 
 model Post {
-  authorId  String
-  content   String?
-  createdAt DateTime  @default(now())
-  id        String    @default(uuid()) @id
-  published Boolean   @default(false)
-  title     String
-  updatedAt DateTime?
-  author    User      @relation(fields: [authorId], references: [id])
+  authorId       String
+  content        String?
+  createdAt      DateTime  @default(now())
+  headerImageUrl String?
+  id             String    @default(uuid()) @id
+  published      Boolean   @default(false)
+  title          String?
+  updatedAt      DateTime?
+  author         User      @relation(fields: [authorId], references: [id])
 
   @@index([authorId], name: "authorId")
 }
