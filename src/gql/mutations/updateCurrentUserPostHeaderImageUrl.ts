@@ -11,16 +11,7 @@ const updateCurrentUserPostHeaderImageUrl = async (
 ): Promise<UpdateCurrentUserPostHeaderImagePayloadType> => {
   const { postId, headerImageUrl } = input
   const { prisma, request } = context
-  const { currentUser } = request
-
-  if (!currentUser) {
-    const userError: UserErrorType = {
-      code: ErrorCodeEnumType.Forbidden,
-      message: 'User is not logged in.',
-    }
-
-    return { successful: false, userErrors: [userError] }
-  }
+  const { sub } = request.user
 
   const post = await prisma.post.findOne({ where: { id: postId } })
 
@@ -35,7 +26,7 @@ const updateCurrentUserPostHeaderImageUrl = async (
 
   const updatedPost = await prisma.post.update({
     data: { headerImageUrl },
-    where: { id: postId },
+    where: { id: postId, authorId: sub },
   })
 
   const isPost = (post: unknown): post is PostType =>

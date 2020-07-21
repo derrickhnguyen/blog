@@ -13,7 +13,10 @@ const getCurrentUser = async (
   args: Record<string, unknown>,
   context: ContextType,
 ): Promise<GetCurrentUserPayloadType> => {
-  const { currentUser } = context.request
+  const { prisma, request } = context
+  const { sub } = request.user
+
+  const currentUser = await prisma.user.findOne({ where: { id: sub } })
 
   const isCurrentUserType = (user: unknown): user is CurrentUserType =>
     user && typeof user === 'object' && !!('id' in user)

@@ -16,19 +16,10 @@ const updateCurrentUserSocialMedia = async (
 ): Promise<UpdateCurrentUserSocialMediasPayloadType> => {
   const { instagramUrl, twitterUrl, facebookUrl } = input
   const { prisma, request } = context
-  const { currentUser } = request
-
-  if (!currentUser) {
-    const userError: UserErrorType = {
-      code: ErrorCodeEnumType.Forbidden,
-      message: 'User is not logged in.',
-    }
-
-    return { successful: false, userErrors: [userError] }
-  }
+  const { sub } = request.user
 
   const profile = await prisma.profile.update({
-    where: { userId: currentUser.id },
+    where: { userId: sub },
     data: {
       instagramUrl: typeof instagramUrl === 'string' ? instagramUrl : undefined,
       twitterUrl: typeof twitterUrl === 'string' ? twitterUrl : undefined,

@@ -11,18 +11,11 @@ const updateCurrentUserPostTitle = async (
 ): Promise<UpdateCurrentUserPostTitlePayloadType> => {
   const { postId, postTitle } = input
   const { prisma, request } = context
-  const { currentUser } = request
+  const { sub } = request.user
 
-  if (!currentUser) {
-    const userError: UserErrorType = {
-      code: ErrorCodeEnumType.Forbidden,
-      message: 'User is not logged in.',
-    }
-
-    return { successful: false, userErrors: [userError] }
-  }
-
-  const post = await prisma.post.findOne({ where: { id: postId } })
+  const post = await prisma.post.findOne({
+    where: { id: postId, authorId: sub },
+  })
 
   if (!post) {
     const userError: UserErrorType = {

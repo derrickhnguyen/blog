@@ -1,12 +1,12 @@
 import { homedir } from 'os'
 import { GraphQLServer } from 'graphql-yoga'
-import { v2 as Cloudinary } from 'cloudinary'
+import { v2 as cloudinary } from 'cloudinary'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
+import expressJwt from 'express-jwt'
 import cors, { CorsOptions } from 'cors'
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { PrismaClient, User } from '@prisma/client'
-import { ContextParameters } from 'graphql-yoga/dist/types'
 import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser'
 import passport from 'passport'
@@ -17,9 +17,9 @@ import initPassport from './initPassport'
 const prisma = new PrismaClient()
 const port = 8000
 const configPath = `${homedir()}/blog.config.env`
-const { parsed } = dotenv.config({ path: configPath })
+const { parsed: envVariables } = dotenv.config({ path: configPath })
 
-if (!parsed) {
+if (!envVariables) {
   throw new Error(
     `Unable to parse environment variables from path ${configPath}`,
   )
@@ -37,9 +37,9 @@ const {
   FB_CLIENT_ID,
   FB_CLIENT_SECRET,
   JWT_SECRET,
-} = parsed
+} = envVariables
 
-Cloudinary.config({
+cloudinary.config({
   cloud_name: CLOUDINARY_CLOUD_NAME,
   api_key: CLOUDINARY_API_KEY,
   api_secret: CLOUDINARY_API_SECRET,
@@ -48,10 +48,10 @@ Cloudinary.config({
 const server = new GraphQLServer({
   /* eslint-disable @typescript-eslint/no-explicit-any */
   schema: schema as any,
-  context: (request: ContextParameters): ContextType => ({
+  context: (request: any): ContextType => ({
     ...request,
     prisma,
-    cloudinary: Cloudinary,
+    cloudinary,
   }),
 })
 
@@ -61,57 +61,19 @@ initPassport({
   prisma,
 })
 
+const checkJwt = expressJwt({
+  secret: JWT_SECRET,
+  issuer: 'api.blog',
+  audience: 'api.blog',
+  algorithms: ['HS256'],
+  getToken: (req: Request) => req.cookies?.blogJwtToken,
+}).unless({ path: ['/auth/facebook/token', '/auth/signout'] })
+
 server.use(cors(corsOptions))
 server.use(cookieParser())
 server.use(bodyParser.urlencoded({ extended: true }))
 server.use(passport.initialize())
-
-server.use(
-  (
-    req: Request & { currentUserId?: number },
-    res: Response,
-    next: NextFunction,
-  ) => {
-    const { blogJwtToken } = req.cookies
-
-    if (!blogJwtToken) {
-      return next()
-    }
-
-    const jwtResponse = jwt.verify(blogJwtToken, JWT_SECRET)
-
-    const containsUserId = (obj: unknown): obj is { currentUserId: number } =>
-      obj && typeof obj === 'object' && !!('currentUserId' in obj)
-
-    if (!containsUserId(jwtResponse)) {
-      return next()
-    }
-
-    req.currentUserId = jwtResponse.currentUserId
-
-    return next()
-  },
-)
-
-server.use(
-  async (
-    req: Request & { currentUser?: User | null; currentUserId?: string },
-    res: Response,
-    next: NextFunction,
-  ) => {
-    if (typeof req.currentUserId !== 'string') {
-      return next()
-    }
-
-    const user = await prisma.user.findOne({
-      where: { id: req.currentUserId },
-    })
-
-    req.currentUser = user
-
-    return next()
-  },
-)
+server.use(checkJwt)
 
 server.get(
   '/auth/facebook/token',
@@ -128,13 +90,15 @@ server.get(
         .json({ success: false, message: 'Unable to authorize user.' })
     }
 
-    const token = jwt.sign({ currentUserId: currentUser.id }, JWT_SECRET)
+    const token = jwt.sign({ sub: currentUser.id }, JWT_SECRET, {
+      issuer: 'api.blog',
+      audience: 'api.blog',
+      algorithm: 'HS256',
+      expiresIn: '1h',
+    })
 
     return res
-      .cookie('blogJwtToken', token, {
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year cookie
-      })
+      .cookie('blogJwtToken', token, { httpOnly: true })
       .status(200)
       .json({ success: true, message: 'User is authorized.' })
   },

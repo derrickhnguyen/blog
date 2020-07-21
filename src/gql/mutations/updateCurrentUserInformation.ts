@@ -16,30 +16,20 @@ const updateCurrentUserInformation = async (
 ): Promise<UpdateCurrentUserInformationPayloadType> => {
   const { updatableCurrentUserInformation } = input
   const { firstName, lastName, bio } = updatableCurrentUserInformation
-
   const { prisma, request } = context
-  const { currentUser } = request
+  const { sub } = request.user
 
-  if (!currentUser) {
-    const userError: UserErrorType = {
-      code: ErrorCodeEnumType.Forbidden,
-      message: 'User is not logged in.',
-    }
-
-    return { successful: false, userErrors: [userError] }
-  }
-
-  const [user] = await Promise.all([
+  const [currentUser] = await Promise.all([
     prisma.user.update({
-      where: { id: currentUser.id },
+      where: { id: sub },
       data: {
-        firstName: firstName || currentUser.firstName,
-        lastName: lastName || currentUser.lastName,
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
       },
     }),
     typeof bio === 'string'
       ? prisma.profile.update({
-          where: { userId: currentUser.id },
+          where: { userId: sub },
           data: { bio },
         })
       : undefined,
@@ -48,14 +38,14 @@ const updateCurrentUserInformation = async (
   const isUser = (user: unknown): user is CurrentUserType =>
     user && typeof user === 'object' && !!('id' in user)
 
-  if (!isUser(user)) {
+  if (!isUser(currentUser)) {
     throw new ApolloError(
       'Unable to update user information',
       ErrorCodeEnumType.InternalServer,
     )
   }
 
-  return { user, successful: true }
+  return { user: currentUser, successful: true }
 }
 
 interface UpdateCurrentUserInformationPayloadType {

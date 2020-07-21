@@ -16,19 +16,10 @@ const updateCurrentUserProfileImageUrl = async (
 ): Promise<UpdateCurrentUserProfileImageUrlPayload> => {
   const { profileImageUrl } = input
   const { cloudinary, prisma, request } = context
-  const { currentUser } = request
-
-  if (!currentUser) {
-    const userError: UserErrorType = {
-      code: ErrorCodeEnumType.Forbidden,
-      message: 'User is not logged in.',
-    }
-
-    return { successful: false, userErrors: [userError] }
-  }
+  const { sub } = request.user
 
   const profile = await prisma.profile.findOne({
-    where: { userId: currentUser.id },
+    where: { userId: sub },
   })
 
   if (profile?.profileImageUrl) {
@@ -46,7 +37,7 @@ const updateCurrentUserProfileImageUrl = async (
   }
 
   const updatedProfile = await prisma.profile.update({
-    where: { userId: currentUser.id },
+    where: { userId: sub },
     data: { profileImageUrl },
     include: { user: true },
   })
