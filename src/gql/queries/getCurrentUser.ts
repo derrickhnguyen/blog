@@ -14,7 +14,16 @@ const getCurrentUser = async (
   context: ContextType,
 ): Promise<GetCurrentUserPayloadType> => {
   const { prisma, request } = context
-  const { sub } = request.user
+  const { sub } = request.user || {}
+
+  if (!sub) {
+    const userError: UserErrorType = {
+      code: ErrorCodeEnumType.Forbidden,
+      message: 'User is not logged in.',
+    }
+
+    return { successful: false, userErrors: [userError] }
+  }
 
   const currentUser = await prisma.user.findOne({ where: { id: sub } })
 

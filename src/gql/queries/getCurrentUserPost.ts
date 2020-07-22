@@ -10,10 +10,19 @@ const getCurrentUserPost = async (
 ): Promise<GetCurrentUserPostPayloadType> => {
   const { postId } = input
   const { prisma, request } = context
-  const { sub } = request.user
+  const { sub } = request.user || {}
+
+  if (!sub) {
+    const userError: UserErrorType = {
+      code: ErrorCodeEnumType.Forbidden,
+      message: 'User is not logged in.',
+    }
+
+    return { successful: false, userErrors: [userError] }
+  }
 
   const post = await prisma.post.findOne({
-    where: { authorId: sub },
+    where: { authorId: sub, id: postId },
   })
 
   const isPost = (post: unknown): post is PostType =>

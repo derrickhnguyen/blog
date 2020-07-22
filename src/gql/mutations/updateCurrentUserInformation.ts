@@ -17,7 +17,16 @@ const updateCurrentUserInformation = async (
   const { updatableCurrentUserInformation } = input
   const { firstName, lastName, bio } = updatableCurrentUserInformation
   const { prisma, request } = context
-  const { sub } = request.user
+  const { sub } = request.user || {}
+
+  if (!sub) {
+    const userError: UserErrorType = {
+      code: ErrorCodeEnumType.Forbidden,
+      message: 'User is not logged in.',
+    }
+
+    return { successful: false, userErrors: [userError] }
+  }
 
   const [currentUser] = await Promise.all([
     prisma.user.update({

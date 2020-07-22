@@ -46,6 +46,37 @@ type GetCurrentUserPostPayload {
   userErrors: [UserError!]
 }
 
+input GetPostByIdInput {
+  postId: String!
+}
+
+type GetPostByIdPayload {
+  post: Post
+  successful: Boolean!
+  userErrors: [UserError!]
+}
+
+input GetRegularUserByIdInput {
+  userId: String!
+}
+
+type GetRegularUserByIdPayload {
+  regularUser: RegularUser
+  successful: Boolean!
+  userErrors: [UserError!]
+}
+
+input GetRegularUserPostByIdInput {
+  postId: String!
+  userId: String!
+}
+
+type GetRegularUserPostByIdPayload {
+  post: Post
+  successful: Boolean!
+  userErrors: [UserError!]
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -84,6 +115,9 @@ type Post implements Node {
 type Query {
   getCurrentUser: GetCurrentUserPayload!
   getCurrentUserPost(input: GetCurrentUserPostInput!): GetCurrentUserPostPayload!
+  getPostById(input: GetPostByIdInput!): GetPostByIdPayload!
+  getRegularUserById(input: GetRegularUserByIdInput!): GetRegularUserByIdPayload!
+  getRegularUserPostById(input: GetRegularUserPostByIdInput!): GetRegularUserPostByIdPayload!
 }
 
 type RegularUser implements Node & User {

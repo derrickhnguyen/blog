@@ -13,6 +13,7 @@ import passport from 'passport'
 import { schema } from './schema'
 import { ContextType } from './contextTypes'
 import initPassport from './initPassport'
+import csrf from 'csurf'
 
 const prisma = new PrismaClient()
 const port = 8000
@@ -62,20 +63,30 @@ initPassport({
 })
 
 const checkJwt = expressJwt({
+  credentialsRequired: false,
   secret: JWT_SECRET,
   issuer: 'api.blog',
   audience: 'api.blog',
   algorithms: ['HS256'],
   getToken: (req: Request) => req.cookies?.blogJwtToken,
-}).unless({ path: ['/auth/facebook/token', '/auth/signout'] })
+}).unless({
+  path: ['/auth/facebook/token', '/auth/signout', '/auth/csrf-token'],
+})
+
+const csrfProtection = csrf({ cookie: true })
 
 server.use(cors(corsOptions))
 server.use(cookieParser())
 server.use(bodyParser.urlencoded({ extended: true }))
 server.use(passport.initialize())
 server.use(checkJwt)
+server.use(csrfProtection)
 
-server.get(
+server.get('/auth/csrf-token', (req: any, res: any) => {
+  res.json({ csrf: req.csrfToken() })
+})
+
+server.post(
   '/auth/facebook/token',
   passport.authenticate('facebook-token'),
   (req: Request, res: Response) => {
@@ -104,7 +115,7 @@ server.get(
   },
 )
 
-server.get('/auth/signout', (req: Request, res: Response) => {
+server.post('/auth/signout', (req: Request, res: Response) => {
   res
     .clearCookie('blogJwtToken')
     .json({ success: true, message: 'Successfully logged out.' })

@@ -1,2 +1,5 @@
 export * from './getCurrentUser'
 export * from './getCurrentUserPost'
+export * from './getPostById'
+export * from './getRegularUserById'
+export * from './getRegularUserPostById'

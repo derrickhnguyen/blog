@@ -10,7 +10,16 @@ const createCurrentUserPost = async (
   context: ContextType,
 ): Promise<CreateCurrentUserPostPayloadType> => {
   const { prisma, request } = context
-  const { sub } = request.user
+  const { sub } = request.user || {}
+
+  if (!sub) {
+    const userError: UserErrorType = {
+      code: ErrorCodeEnumType.Forbidden,
+      message: 'User is not logged in.',
+    }
+
+    return { successful: false, userErrors: [userError] }
+  }
 
   const newPost = await prisma.post.create({
     data: { author: { connect: { id: sub } } },
